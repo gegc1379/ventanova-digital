@@ -1,0 +1,76 @@
+<div class="my-6">
+  <div class="mb-8">
+    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Catálogo General</h1>
+    <p class="text-slate-500 text-sm mt-1">Explora nuestra colección completa de dispositivos tecnológicos de alta gama.</p>
+  </div>
+
+  <div class="mb-8 flex flex-col sm:flex-row gap-3 max-w-3xl">
+    <div class="relative rounded-xl shadow-sm grow">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <input 
+        type="text" 
+        [(ngModel)]="textoBusqueda" 
+        placeholder="Buscar por nombre o categoría (Ej: Notebook, Audio...)" 
+        class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl bg-white outline-none text-slate-700 placeholder-slate-400 transition-all focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+      />
+    </div>
+
+    <select
+      [(ngModel)]="categoriaSeleccionada"
+      aria-label="Filtrar por categoría"
+      class="sm:w-52 px-4 py-3 border border-slate-200 rounded-xl bg-white outline-none text-slate-700 shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+    >
+      @for (cat of categorias(); track cat) {
+        <option [value]="cat">{{ cat }}</option>
+      }
+    </select>
+  </div>
+
+  @if (productoActivo(); as p) {
+    <div class="mb-8 p-6 bg-indigo-50 border border-indigo-100 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-20 h-20 bg-white rounded-lg p-2 border border-slate-100 flex items-center justify-center shrink-0">
+          <img [src]="p.imagenUrl" [alt]="p.nombre" class="max-w-full max-h-full object-contain">
+        </div>
+        <div>
+          <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest">{{ p.categoria }}</span>
+          <h4 class="text-lg font-bold text-slate-900">{{ p.nombre }}</h4>
+          <p class="text-sm text-slate-600">{{ p.descripcion }}</p>
+          <p class="text-sm text-slate-500 mt-1">Precio de referencia: <span class="font-semibold text-slate-800">{{ p.precio | currency:'CLP':'$':'1.0-0' }}</span></p>
+        </div>
+      </div>
+      <div class="flex gap-2 w-full md:w-auto justify-end">
+        <a routerLink="/contacto" (click)="cotizar(p)" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-all shadow-sm outline-none">
+          Cotizar ahora
+        </a>
+        <button (click)="productoActivo.set(null)" class="text-slate-400 hover:text-slate-600 text-sm px-3 py-2 outline-none">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    @for (item of productosFiltrados(); track item.id) {
+      <app-tarjeta-producto 
+        [producto]="item"
+        (productoSeleccionado)="productoActivo.set($event)"
+      ></app-tarjeta-producto>
+    } @empty {
+      <div class="col-span-full text-center py-16 bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-6">
+        <svg class="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="text-base font-semibold text-slate-800">No encontramos resultados</h3>
+        <p class="text-sm text-slate-400 mt-1">Prueba modificando los términos de búsqueda o la categoría seleccionada.</p>
+        <button (click)="limpiarFiltros()" class="mt-4 text-xs font-medium bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors outline-none">
+          Limpiar filtros
+        </button>
+      </div>
+    }
+  </div>
+</div>

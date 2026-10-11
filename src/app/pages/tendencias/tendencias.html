@@ -1,0 +1,120 @@
+<div class="my-6">
+  <div class="mb-8">
+    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Tendencias y Análisis</h1>
+    <p class="text-slate-500 text-sm mt-1">Filtra y compara las características de nuestros dispositivos tecnológicos por categorías de mercado.</p>
+  </div>
+
+  <section class="mb-10">
+    <h2 class="text-xl font-bold text-slate-800">Panorama por categoría</h2>
+    <p class="text-slate-500 text-sm mt-0.5 mb-4">Crecimiento anual de ventas digitales (datos referenciales de VentaNova Digital).</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      @for (r of resumenCategorias(); track r.categoria) {
+        <div class="bg-white border border-slate-100 rounded-xl shadow-sm p-5">
+          <span class="text-xs font-medium text-indigo-600 uppercase tracking-wider">{{ r.categoria }}</span>
+          <p class="text-3xl font-extrabold text-slate-900 mt-1">+{{ r.crecimiento }}%</p>
+          <div class="h-2 bg-slate-100 rounded-full mt-3 overflow-hidden">
+            <div class="h-2 bg-indigo-600 rounded-full transition-all" [style.width.%]="r.barra"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-3">{{ r.cantidad }} producto(s) · Promedio {{ r.precioPromedio | currency:'CLP':'$':'1.0-0' }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="mb-10">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <div>
+        <h2 class="text-xl font-bold text-slate-800">Comparador de productos</h2>
+        <p class="text-slate-500 text-sm mt-0.5">Elige entre 2 y 3 productos con el botón "Comparar" de las tarjetas.</p>
+      </div>
+      @if (seleccionados().length > 0) {
+        <button (click)="limpiarComparacion()" class="text-sm text-slate-500 hover:text-slate-700 outline-none">
+          Limpiar comparación
+        </button>
+      }
+    </div>
+
+    @if (seleccionados().length >= 2) {
+      <div class="overflow-x-auto bg-white border border-slate-100 rounded-xl shadow-sm">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider">
+            <tr>
+              <th class="px-4 py-3">Producto</th>
+              <th class="px-4 py-3">Categoría</th>
+              <th class="px-4 py-3">Precio</th>
+              <th class="px-4 py-3">Crecimiento de ventas</th>
+              <th class="px-4 py-3">Calificación</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of seleccionados(); track p.id) {
+              <tr class="border-t border-slate-100">
+                <td class="px-4 py-3 font-semibold text-slate-800">
+                  {{ p.nombre }}
+                  @if (p.id === mejorCrecimientoId()) {
+                    <span class="ml-2 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Mayor crecimiento</span>
+                  }
+                </td>
+                <td class="px-4 py-3 text-slate-600">{{ p.categoria }}</td>
+                <td class="px-4 py-3 text-slate-800">{{ p.precio | currency:'CLP':'$':'1.0-0' }}</td>
+                <td class="px-4 py-3 text-slate-800">+{{ p.crecimientoVentas }}%</td>
+                <td class="px-4 py-3 text-slate-800">{{ p.calificacion }} / 5</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-6 text-center text-sm text-slate-500">
+        Selecciona al menos 2 productos para ver la comparación ({{ seleccionados().length }} seleccionado(s)).
+      </div>
+    }
+
+    @if (limiteAlcanzado()) {
+      <p class="text-xs text-amber-600 mt-2">Alcanzaste el máximo de 3 productos. Quita uno para agregar otro.</p>
+    }
+  </section>
+
+  <div class="mb-8 flex flex-wrap gap-2">
+    @for (cat of categoriasDisponibles(); track cat) {
+      <button 
+        (click)="categoriaSeleccionada.set(cat)"
+        [class]="categoriaSeleccionada() === cat 
+          ? 'px-4 py-2 text-sm font-medium rounded-xl border transition-all outline-none bg-indigo-600 text-white shadow-sm border-indigo-600 scale-[1.02]' 
+          : 'px-4 py-2 text-sm font-medium rounded-xl border transition-all outline-none bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-800'"
+      >
+        {{ cat }}
+      </button>
+    }
+  </div>
+
+  <div class="mb-6 bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-center justify-between">
+    <span class="text-sm font-medium text-slate-600">
+      Filtrando por: <strong class="text-indigo-600 text-base ml-1 uppercase tracking-wider font-bold">{{ categoriaSeleccionada() }}</strong>
+    </span>
+    <span class="text-xs font-semibold bg-slate-200/70 text-slate-700 px-2.5 py-1 rounded-md">
+      {{ productosFiltradosPorCategoria().length }} Artículo(s) encontrado(s)
+    </span>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    @for (item of productosFiltradosPorCategoria(); track item.id) {
+      <div
+        class="rounded-xl transition-all duration-300 hover:scale-[1.01]"
+        [class.ring-2]="estaSeleccionado(item)"
+        [class.ring-indigo-500]="estaSeleccionado(item)"
+      >
+        <app-tarjeta-producto
+          [producto]="item"
+          [textoBoton]="estaSeleccionado(item) ? 'Quitar' : 'Comparar'"
+          (productoSeleccionado)="alternarComparacion($event)"
+        ></app-tarjeta-producto>
+      </div>
+    } @empty {
+      <p class="text-slate-400 col-span-full text-center py-8">
+        No se encontraron productos en esta categoría.
+      </p>
+    }
+  </div>
+</div>
